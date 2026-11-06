@@ -214,7 +214,7 @@ def _make_task(
             "then call update_ticket with status=resolved and the exact matching remedy_code."
         )
         spec = {"targets": targets}
-        optimal = 2 * len(targets)  # KB lookup + update per ticket
+        optimal = len(targets)  # one update per ticket; KB codes are in the observation
 
     elif family == "escalate_sla_breach":
         breached = [t for t in _open(state) if t.sla_hours_remaining <= 0]
@@ -243,7 +243,11 @@ def _make_task(
             f"duplicate with status=resolved and remedy_code={CATEGORY_REMEDY[dup.category]}; "
             f"leave {primary.ticket_id} open."
         )
-        spec = {"duplicate": dup.ticket_id, "primary": primary.ticket_id}
+        spec = {
+            "duplicate": dup.ticket_id,
+            "primary": primary.ticket_id,
+            "remedy_code": CATEGORY_REMEDY[dup.category],
+        }
         optimal = 1
 
     elif family == "bulk_status_sweep":

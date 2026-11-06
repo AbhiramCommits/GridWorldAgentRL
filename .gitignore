@@ -11,10 +11,7 @@ htmlcov/
 assets/
 checkpoints/
 data/
-results/*
-!results/.gitkeep
-results/figures/*.png
-!results/.gitkeep
+results/*.tmp
 .DS_Store
 *.log
 .env
