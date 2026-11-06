@@ -10,7 +10,7 @@ dist/
 htmlcov/
 assets/
 checkpoints/
-data/
+/data/
 results/*.tmp
 .DS_Store
 *.log
