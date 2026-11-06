@@ -1,0 +1,33 @@
+{
+  "mode": "sparse",
+  "trainer": "trl.GRPOTrainer",
+  "final_loss": 1.4486109421341098e-05,
+  "steps": 6,
+  "wall_seconds": 318.22,
+  "n_train_prompts": 8,
+  "group_size": 2,
+  "beta": 0.04,
+  "temperature": 0.9,
+  "init_adapter": "/Users/abhiramkasireddi/GridWorldAgentRL/checkpoints/sft",
+  "curve_path": "/Users/abhiramkasireddi/GridWorldAgentRL/results/rl_sparse_curve.jsonl",
+  "final_mean_reward": 0.0,
+  "final_mean_kl": 0.00011248716327827424,
+  "reward_collapsed": true,
+  "output_dir": "/Users/abhiramkasireddi/GridWorldAgentRL/checkpoints/rl_sparse",
+  "config": {
+    "max_steps": 6,
+    "batch_size": 2,
+    "grad_accum": 1,
+    "lr": 5e-05,
+    "group_size": 2,
+    "beta": 0.04,
+    "loss_type": "grpo"
+  },
+  "metadata": {
+    "profile": "smoke",
+    "seed": 0,
+    "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "git_commit": "73ca634",
+    "config_path": "/Users/abhiramkasireddi/GridWorldAgentRL/configs/smoke.yaml"
+  }
+}

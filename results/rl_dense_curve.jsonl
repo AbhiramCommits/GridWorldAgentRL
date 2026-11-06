@@ -1,0 +1,6 @@
+{"step": 1, "mean_reward": -0.054999999701976776, "mean_kl": 0.0006689351284876466, "success_rate": 0.0, "mean_turns": 4.5, "loss": 2.6732683181762695e-05}
+{"step": 2, "mean_reward": 0.0, "mean_kl": 0.0003245917905587703, "success_rate": 0.0, "mean_turns": 2.5, "loss": 2.0079005480511114e-05}
+{"step": 3, "mean_reward": 0.0, "mean_kl": 0.00014768290566280484, "success_rate": 0.0, "mean_turns": 3.0, "loss": 9.683009011496324e-06}
+{"step": 4, "mean_reward": 0.0, "mean_kl": 0.00031701382249593735, "success_rate": 0.0, "mean_turns": 3.0, "loss": 1.2587337550939992e-05}
+{"step": 5, "mean_reward": 0.0, "mean_kl": 0.0003553857677616179, "success_rate": 0.0, "mean_turns": 3.0, "loss": 1.1918389645870775e-05}
+{"step": 6, "mean_reward": 0.0, "mean_kl": 0.00011248716327827424, "success_rate": 0.0, "mean_turns": 3.0, "loss": 5.916231657465687e-06}
