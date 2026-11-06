@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gridworldagentrl"
+version = "0.1.0"
+description = "Online RL post-training of a multi-turn tool-using LLM agent in a verifiable simulated CRM"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "GridWorldAgentRL" }]
+dependencies = [
+  "torch>=2.2",
+  "transformers>=4.44",
+  "trl>=0.12",
+  "peft>=0.11",
+  "datasets>=2.20",
+  "accelerate>=0.30",
+  "numpy>=1.26",
+  "matplotlib>=3.8",
+  "pyyaml>=6.0",
+  "gymnasium>=0.29",
+]
+
+[project.optional-dependencies]
+vllm = ["vllm>=0.6"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.5"]
+
+[project.scripts]
+gwa = "gwa.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+  "slow: tests that run model training or long rollouts",
+]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]

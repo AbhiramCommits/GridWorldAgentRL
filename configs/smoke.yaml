@@ -1,0 +1,3 @@
+# Smoke profile: the full pipeline on the tiny model in a few minutes.
+extends: default.yaml
+default_profile: smoke

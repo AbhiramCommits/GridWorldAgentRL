@@ -1,0 +1,152 @@
+# GridWorldAgentRL base configuration.
+# Every value here is intentionally tiny so the full pipeline runs on a laptop CPU.
+default_profile: default
+seed: 0
+
+model:
+  id: HuggingFaceTB/SmolLM2-135M-Instruct
+  fallback_id: sshleifer/tiny-gpt2
+  # If neither hub model can be reached, build a tiny random GPT-2 locally.
+  local_tiny_if_unavailable: true
+  local_tiny_dir: assets/tiny_model
+  dtype: float32
+  device: cpu
+  trust_remote_code: false
+  max_new_tokens: 64
+  temperature: 0.8
+  top_p: 0.95
+  repetition_penalty: 1.05
+
+env:
+  n_customers: 8
+  n_tickets: 20
+  n_articles: 10
+  max_steps: 8
+  reward_mode: dense
+
+reward:
+  invalid_action_penalty: 0.10
+  valid_tool_bonus: 0.02
+  step_cost: 0.01
+  subgoal_weight: 0.25
+  success_bonus: 1.0
+
+agent:
+  history_turns: 3
+  history_chars: 600
+  stop_on_success: true
+
+data:
+  n_train: 18
+  n_eval: 24
+  eval_seeds: [0, 1]
+  tasks_train: data/tasks_train.jsonl
+  tasks_eval: data/tasks_eval.jsonl
+  sft_out: data/sft.jsonl
+  prefs_out: data/prefs.jsonl
+
+sft:
+  max_steps: 60
+  batch_size: 2
+  grad_accum: 2
+  lr: 2.0e-4
+  epochs: 1
+  max_length: 768
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  logging_steps: 5
+  output_dir: checkpoints/sft
+
+dpo:
+  max_steps: 24
+  batch_size: 2
+  grad_accum: 2
+  lr: 5.0e-5
+  beta: 0.1
+  max_length: 768
+  max_prompt_length: 640
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  logging_steps: 4
+  output_dir: checkpoints/dpo
+
+rl:
+  max_steps: 12
+  group_size: 2
+  batch_size: 2
+  grad_accum: 1
+  lr: 5.0e-5
+  beta: 0.04
+  temperature: 0.9
+  top_p: 0.95
+  max_new_tokens: 64
+  max_turns: 6
+  train_tasks: 8
+  logging_steps: 1
+  output_dir_sparse: checkpoints/rl_sparse
+  output_dir_dense: checkpoints/rl_dense
+  # Online RL is initialised from the SFT adapter when it exists (standard post-training
+  # practice); otherwise it starts from the base model.
+  init_from_sft: true
+
+eval:
+  max_turns: 6
+  max_new_tokens: 64
+  temperature: 0.2
+  top_p: 0.95
+  n_bootstrap: 10000
+  policies: [base, sft, dpo, rl_sparse, rl_dense, scripted]
+
+rollout:
+  n_per_task: 1
+  max_turns: 6
+
+profiles:
+  smoke:
+    data:
+      n_train: 18
+      n_eval: 12
+      eval_seeds: [0]
+    sft:
+      max_steps: 30
+      logging_steps: 5
+    dpo:
+      max_steps: 10
+      logging_steps: 2
+    rl:
+      max_steps: 6
+      group_size: 2
+      train_tasks: 8
+      max_turns: 6
+    eval:
+      max_turns: 6
+  default:
+    data:
+      n_train: 18
+      n_eval: 24
+      eval_seeds: [0, 1]
+    sft:
+      max_steps: 60
+    dpo:
+      max_steps: 24
+    rl:
+      max_steps: 12
+      group_size: 2
+      train_tasks: 12
+  large:
+    data:
+      n_train: 36
+      n_eval: 36
+      eval_seeds: [0, 1, 2, 3]
+    sft:
+      max_steps: 200
+      lora_r: 16
+    dpo:
+      max_steps: 80
+      lora_r: 16
+    rl:
+      max_steps: 40
+      group_size: 4
+      train_tasks: 18
