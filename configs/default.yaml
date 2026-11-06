@@ -12,7 +12,7 @@ model:
   dtype: float32
   device: cpu
   trust_remote_code: false
-  max_new_tokens: 48
+  max_new_tokens: 96
   temperature: 0.8
   top_p: 0.95
   repetition_penalty: 1.05
@@ -32,8 +32,8 @@ reward:
   success_bonus: 1.0
 
 agent:
-  history_turns: 3
-  history_chars: 600
+  history_turns: 1
+  history_chars: 400
   stop_on_success: true
   # Bound wasted CPU on a model that cannot follow the format.
   max_consecutive_malformed: 3
@@ -48,23 +48,24 @@ data:
   prefs_out: data/prefs.jsonl
 
 sft:
-  max_steps: 60
-  batch_size: 2
-  grad_accum: 2
-  lr: 2.0e-4
+  max_steps: 40
+  batch_size: 4
+  grad_accum: 1
+  lr: 5.0e-4
   epochs: 1
   max_length: 768
   lora_r: 8
   lora_alpha: 16
   lora_dropout: 0.05
-  logging_steps: 5
+  logging_steps: 2
   output_dir: checkpoints/sft
 
 dpo:
-  max_steps: 24
-  batch_size: 2
+  max_steps: 8
+  batch_size: 1
   grad_accum: 2
   lr: 5.0e-5
+  precompute_ref_log_probs: true
   beta: 0.1
   max_length: 768
   max_prompt_length: 640
@@ -83,7 +84,7 @@ rl:
   beta: 0.04
   temperature: 0.9
   top_p: 0.95
-  max_new_tokens: 48
+  max_new_tokens: 96
   max_turns: 6
   train_tasks: 8
   logging_steps: 1
@@ -95,7 +96,7 @@ rl:
 
 eval:
   max_turns: 6
-  max_new_tokens: 48
+  max_new_tokens: 96
   temperature: 0.2
   top_p: 0.95
   n_bootstrap: 10000
@@ -108,14 +109,14 @@ rollout:
 profiles:
   smoke:
     data:
-      n_train: 18
+      n_train: 120
       n_eval: 12
       eval_seeds: [0]
     sft:
-      max_steps: 30
-      logging_steps: 5
+      max_steps: 40
+      logging_steps: 10
     dpo:
-      max_steps: 10
+      max_steps: 8
       logging_steps: 2
     rl:
       max_steps: 6
@@ -130,7 +131,7 @@ profiles:
       n_eval: 24
       eval_seeds: [0, 1]
     sft:
-      max_steps: 60
+      max_steps: 40
     dpo:
       max_steps: 24
     rl:

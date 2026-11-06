@@ -241,7 +241,7 @@ def test_optimal_refusal():
 # Truncation, info, and action-space surface
 # ---------------------------------------------------------------------------
 def test_max_steps_truncation():
-    env = make_ticket_env("triage_and_route", max_steps=1)
+    env = make_ticket_env("bulk_status_sweep", max_steps=1)
     _, _, terminated, truncated, info = env.step(
         ToolCall("search_tickets", {"status": "open"})
     )

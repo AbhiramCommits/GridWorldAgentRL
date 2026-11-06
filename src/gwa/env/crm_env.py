@@ -150,13 +150,13 @@ class CRMEnv:
         visible = [t for t in self.state.sorted_tickets() if t.status != "resolved"]
         hidden = len(self.state.tickets) - len(visible)
         lines.append(f"TICKETS ({len(visible)} active, {hidden} resolved hidden):")
-        for t in visible[:16]:
+        for t in visible[:6]:
             lines.append(
                 f"{t.ticket_id}|{t.customer_id}|{t.status}|{t.priority}|{t.category}|"
-                f"SLA{t.sla_hours_remaining}h|{_clip(t.text, 74)}"
+                f"SLA{t.sla_hours_remaining}h|{_clip(t.text, 40)}"
             )
-        if len(visible) > 16:
-            lines.append(f"... {len(visible) - 16} more active tickets (use search_tickets)")
+        if len(visible) > 6:
+            lines.append(f"... {len(visible) - 6} more active tickets (use search_tickets)")
 
         kb = ", ".join(f"{c}->{CATEGORY_REMEDY[c]}" for c in sorted(CATEGORY_REMEDY))
         lines.append(f"KB REMEDY CODES: {kb}")

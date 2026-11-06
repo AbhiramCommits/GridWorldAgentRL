@@ -24,6 +24,8 @@ def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
+    # Small-model CPU training on Apple Silicon is fastest with 4 threads.
+    torch.set_num_threads(int(os.environ.get("GWA_NUM_THREADS", "4")))
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     # Deterministic kernels where available. CPU generation is deterministic already.

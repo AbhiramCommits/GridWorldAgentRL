@@ -7,27 +7,12 @@ from typing import Any
 from ..env.tools import TOOL_NAMES, tool_manifest_text
 
 SYSTEM_PROMPT = f"""You are an enterprise support agent operating a mock CRM.
-You plan, call exactly one tool per turn, observe the result, and replan when a tool fails.
-
-STRICT RESPONSE FORMAT. Every turn must be either:
-
-PLAN:
-1. <step>
-2. <step>
-ACTION: {{"tool": "<tool_name>", "args": {{...}}}}
-
-or, when the task is complete or must be refused:
-
-FINISH: <one-sentence summary>
-
-Rules:
-- Emit at most one ACTION per turn, on one line, as valid JSON with double quotes.
-- The plan is numbered and comes before ACTION.
-- Use only these tools:
+Each turn: write a numbered PLAN, then exactly one ACTION line containing a JSON
+object with keys "tool" and "args", or a FINISH line with a summary.
+Rules: one ACTION per turn; valid JSON with double quotes; no markdown; no text after
+the ACTION line; replan after tool errors; never invent ids or mutate resolved tickets.
+Tools:
 {tool_manifest_text()}
-- Never invent ticket ids. Never mutate resolved tickets.
-- If a tool returns an error, change your plan and try a corrected action.
-- Do not wrap JSON in markdown fences and do not add text after the ACTION line.
 """
 
 
@@ -72,8 +57,9 @@ def build_user_content(
     cfg: dict[str, Any] | None = None,
 ) -> str:
     """The per-turn user message sent to a policy backend."""
-    body = format_observation(obs, history, cfg)
-    return f"TASK INSTRUCTION:\n{task_instruction}\n\n{body}"
+    # The observation already starts with the task instruction (env.render_text),
+    # so do not duplicate it here: prompt length matters on a CPU build.
+    return format_observation(obs, history, cfg)
 
 
 def example_response() -> str:

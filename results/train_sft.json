@@ -1,0 +1,33 @@
+{
+  "final_loss": 0.9284466624259948,
+  "steps": 40,
+  "wall_seconds": 586.11,
+  "n_train_records": 113,
+  "trainable_params": 460800,
+  "total_params": 134975808,
+  "trainable_fraction": 0.003414,
+  "loss_history": [
+    1.3809469223022461,
+    0.9666319847106933,
+    0.7954544067382813,
+    0.5707533359527588
+  ],
+  "output_dir": "/Users/abhiramkasireddi/GridWorldAgentRL/checkpoints/sft",
+  "config": {
+    "max_steps": 40,
+    "batch_size": 4,
+    "grad_accum": 1,
+    "lr": 0.0005,
+    "lora_r": 8,
+    "lora_alpha": 16,
+    "max_length": 768,
+    "trainer": "trl.SFTTrainer"
+  },
+  "metadata": {
+    "profile": "smoke",
+    "seed": 0,
+    "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "git_commit": "5bb655c",
+    "config_path": "/Users/abhiramkasireddi/GridWorldAgentRL/configs/smoke.yaml"
+  }
+}

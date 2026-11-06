@@ -293,7 +293,8 @@ def tool_manifest_text() -> str:
     lines = []
     for name in TOOL_NAMES:
         schema = TOOL_SCHEMAS[name]
-        req = ", ".join(schema["required"]) or "none"
-        opt = ", ".join(schema["optional"]) or "none"
-        lines.append(f"- {name}: required=[{req}] optional=[{opt}] - {schema['description']}")
+        req = ", ".join(schema["required"])
+        opt = ", ".join(f"{k}?" for k in schema["optional"])
+        args = ", ".join(x for x in (req, opt) if x)
+        lines.append(f"- {name}({args})")
     return "\n".join(lines)

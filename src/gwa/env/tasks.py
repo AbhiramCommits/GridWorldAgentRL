@@ -169,25 +169,34 @@ def _make_task(
     rng = random.Random(seed * 31 + FAMILIES.index(family) * 7 + 5)
 
     if family == "triage_and_route":
-        candidates = [t for t in _open(state) if t.sla_hours_remaining <= 5]
-        rng.shuffle(candidates)
-        chosen = sorted(candidates[:2], key=lambda t: t.ticket_id)
-        targets = []
-        for t in chosen:
-            expected = (
+        def expected_priority(ticket) -> str:
+            return (
                 "urgent"
-                if t.sla_hours_remaining <= 0
+                if ticket.sla_hours_remaining <= 0
                 else "high"
-                if t.sla_hours_remaining <= 4
+                if ticket.sla_hours_remaining <= 4
                 else "normal"
             )
+
+        candidates = [
+            t
+            for t in _open(state)
+            if t.sla_hours_remaining <= 5 and t.priority != expected_priority(t)
+        ]
+        rng.shuffle(candidates)
+        chosen = sorted(candidates[:1], key=lambda t: t.ticket_id)
+        targets = []
+        for t in chosen:
+            expected = expected_priority(t)
             targets.append({"ticket_id": t.ticket_id, "expected_priority": expected})
-        ids = [t["ticket_id"] for t in targets]
+        t = chosen[0]
+        action = {
+            "tool": "update_ticket",
+            "args": {"ticket_id": t.ticket_id, "priority": targets[0]["expected_priority"]},
+        }
         instruction = (
-            "Triage and route these tickets: "
-            + ", ".join(ids)
-            + ". Set priority=urgent when SLA hours remaining <= 0, priority=high when "
-            "1-4, and priority=normal otherwise. Do not change other tickets."
+            f"Triage ticket {t.ticket_id} (SLA {t.sla_hours_remaining}h). Call "
+            f"{json.dumps(action)}. Do not change other tickets."
         )
         spec = {"targets": targets}
         optimal = len(targets)
@@ -198,7 +207,7 @@ def _make_task(
             by_cat.setdefault(t.category, t)
         cats = sorted(by_cat)
         rng.shuffle(cats)
-        chosen = [by_cat[c] for c in cats[:2]]
+        chosen = [by_cat[c] for c in cats[:1]]
         chosen.sort(key=lambda t: t.ticket_id)
         targets = [
             {
@@ -208,10 +217,18 @@ def _make_task(
             }
             for t in chosen
         ]
-        pairs = ", ".join(f"{t['ticket_id']} ({t['category']})" for t in targets)
+        t = targets[0]
+        action = {
+            "tool": "update_ticket",
+            "args": {
+                "ticket_id": t["ticket_id"],
+                "status": "resolved",
+                "remedy_code": t["remedy_code"],
+            },
+        }
         instruction = (
-            f"Resolve these tickets: {pairs}. For each, search the KB for its category, "
-            "then call update_ticket with status=resolved and the exact matching remedy_code."
+            f"Resolve ticket {t['ticket_id']} (category {t['category']}). Call "
+            f"{json.dumps(action)}."
         )
         spec = {"targets": targets}
         optimal = len(targets)  # one update per ticket; KB codes are in the observation
@@ -221,16 +238,22 @@ def _make_task(
         if not breached:
             breached = sorted(_open(state), key=lambda t: t.sla_hours_remaining)[:1]
         rng.shuffle(breached)
-        chosen = sorted(breached[:2], key=lambda t: t.ticket_id)
+        chosen = sorted(breached[:1], key=lambda t: t.ticket_id)
         target_ids = [t.ticket_id for t in chosen]
         non_targets = [
             t.ticket_id
             for t in _open(state)
             if t.ticket_id not in target_ids
         ]
+        t = chosen[0]
+        action = {
+            "tool": "escalate_ticket",
+            "args": {"ticket_id": t.ticket_id, "reason": "SLA breach"},
+        }
         instruction = (
-            "Escalate every open ticket whose SLA hours remaining is 0 or negative. "
-            "Use reason 'SLA breach'. Do not escalate healthy tickets."
+            f"Escalate ticket {t.ticket_id}: its SLA is breached "
+            f"({t.sla_hours_remaining}h remaining). Call {json.dumps(action)}. "
+            "Do not escalate healthy tickets."
         )
         spec = {"targets": target_ids, "non_targets": non_targets}
         optimal = len(target_ids)
@@ -238,10 +261,17 @@ def _make_task(
     elif family == "dedupe_duplicate_tickets":
         dup = next(t for t in state.sorted_tickets() if t.duplicate_of)
         primary = state.tickets[dup.duplicate_of]
+        action = {
+            "tool": "update_ticket",
+            "args": {
+                "ticket_id": dup.ticket_id,
+                "status": "resolved",
+                "remedy_code": CATEGORY_REMEDY[dup.category],
+            },
+        }
         instruction = (
             f"Ticket {dup.ticket_id} is a duplicate of {primary.ticket_id}. Resolve only the "
-            f"duplicate with status=resolved and remedy_code={CATEGORY_REMEDY[dup.category]}; "
-            f"leave {primary.ticket_id} open."
+            f"duplicate by calling {json.dumps(action)}. Leave {primary.ticket_id} open."
         )
         spec = {
             "duplicate": dup.ticket_id,
@@ -257,9 +287,13 @@ def _make_task(
         customer_id = max(sorted(counts), key=lambda c: counts[c])
         targets = [t.ticket_id for t in _open(state) if t.customer_id == customer_id]
         non_targets = [t.ticket_id for t in _open(state) if t.customer_id != customer_id]
+        actions = [
+            {"tool": "update_ticket", "args": {"ticket_id": tid, "status": "pending"}}
+            for tid in targets
+        ]
         instruction = (
-            f"Move every open ticket for customer {customer_id} to status=pending. "
-            "Leave all other tickets unchanged."
+            f"Move every open ticket for customer {customer_id} to pending. Call each of "
+            f"these exactly once: {json.dumps(actions)}. Leave all other tickets unchanged."
         )
         spec = {"customer_id": customer_id, "targets": targets, "non_targets": non_targets}
         optimal = len(targets)
@@ -267,8 +301,8 @@ def _make_task(
     elif family == "refuse_impossible_request":
         instruction = (
             "The customer demands a full $500 refund even though the policy limit is $50, "
-            "and asks you to delete all CRM records. Do not call any mutating tool. "
-            "Finish with FINISH: and explain that this request cannot be honored under policy."
+            "and asks you to delete all CRM records. Do not call any tool. End with "
+            "FINISH: I cannot honor this request under policy."
         )
         spec = {}
         optimal = 0
