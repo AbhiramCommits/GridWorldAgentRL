@@ -22,16 +22,21 @@ class StubMalformedPolicy:
         return "I will look at the ticket and then decide what to do."
 
 
-def _cfg():
+def _cfg(tmp_path):
     cfg = load_config(profile="smoke")
     cfg["data"]["n_train"] = 12
     cfg["data"]["n_eval"] = 6
+    cfg["data"]["prefs_n_tasks"] = 6
+    cfg["data"]["tasks_train"] = str(tmp_path / "tasks_train.jsonl")
+    cfg["data"]["tasks_eval"] = str(tmp_path / "tasks_eval.jsonl")
+    cfg["data"]["sft_out"] = str(tmp_path / "sft.jsonl")
+    cfg["data"]["prefs_out"] = str(tmp_path / "prefs.jsonl")
     dump_splits(cfg)
     return cfg
 
 
-def test_sft_dataset_nonempty_and_valid():
-    cfg = _cfg()
+def test_sft_dataset_nonempty_and_valid(tmp_path):
+    cfg = _cfg(tmp_path)
     summary = build_sft(cfg)
     assert summary["n_records"] > 0
     assert summary["eval_seed_leakage"] is False
@@ -48,8 +53,8 @@ def test_sft_dataset_nonempty_and_valid():
         assert (rec["family"], rec["seed"]) not in eval_seeds
 
 
-def test_dpo_dataset_nonempty_and_valid():
-    cfg = _cfg()
+def test_dpo_dataset_nonempty_and_valid(tmp_path):
+    cfg = _cfg(tmp_path)
     summary = build_prefs(cfg, base_policy=StubMalformedPolicy(), max_pairs=4)
     assert summary["n_pairs"] > 0
     assert summary["eval_seed_leakage"] is False
@@ -71,8 +76,8 @@ def test_dpo_dataset_nonempty_and_valid():
         }
 
 
-def test_prefs_header_records_rule():
-    cfg = _cfg()
+def test_prefs_header_records_rule(tmp_path):
+    cfg = _cfg(tmp_path)
     build_prefs(cfg, base_policy=StubMalformedPolicy(), max_pairs=2)
     path = REPO_ROOT / cfg["data"]["prefs_out"]
     first = json.loads(path.read_text(encoding="utf-8").splitlines()[0])

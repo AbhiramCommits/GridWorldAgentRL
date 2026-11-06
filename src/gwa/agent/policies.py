@@ -441,6 +441,7 @@ def build_policy(
     backend: str = "hf",
     task: Task | None = None,
     adapter_path: str | Path | None = None,
+    temperature: float | None = None,
 ) -> Policy:
     """Construct a policy by name, resolving adapters from the config."""
     model_cfg = cfg.get("model", {})
@@ -451,7 +452,9 @@ def build_policy(
         kwargs = dict(
             name=name,
             max_new_tokens=int(model_cfg.get("max_new_tokens", 64)),
-            temperature=float(model_cfg.get("temperature", 0.0)),
+            temperature=float(
+                model_cfg.get("temperature", 0.0) if temperature is None else temperature
+            ),
             top_p=float(model_cfg.get("top_p", 0.95)),
             repetition_penalty=float(model_cfg.get("repetition_penalty", 1.05)),
             device=str(model_cfg.get("device", "cpu")),

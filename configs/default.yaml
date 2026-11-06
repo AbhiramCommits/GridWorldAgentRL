@@ -46,6 +46,7 @@ data:
   tasks_eval: data/tasks_eval.jsonl
   sft_out: data/sft.jsonl
   prefs_out: data/prefs.jsonl
+  prefs_n_tasks: 18
 
 sft:
   max_steps: 40
@@ -110,7 +111,8 @@ profiles:
   smoke:
     data:
       n_train: 120
-      n_eval: 12
+      n_eval: 6
+      prefs_n_tasks: 18
       eval_seeds: [0]
     sft:
       max_steps: 40
