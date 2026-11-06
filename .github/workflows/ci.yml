@@ -1,0 +1,64 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install CPU torch and project
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Fast tests with coverage
+        run: pytest -q -m "not slow" --cov=gwa --cov-report=term
+
+  smoke-pipeline:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install CPU torch and project
+        run: |
+          python -m pip install --upgrade pip
+          pip install --index-url https://download.pytorch.org/whl/cpu torch
+          pip install -e .
+      - name: Build local tiny model
+        run: python -m gwa.tiny
+      - name: Task splits
+        run: python -m gwa.env.tasks --dump --config configs/ci.yaml --profile ci
+      - name: Build SFT data
+        run: python -m gwa.cli build-sft --config configs/ci.yaml --profile ci
+      - name: Train SFT
+        run: python -m gwa.cli train-sft --config configs/ci.yaml --profile ci
+      - name: Build DPO preferences
+        run: python -m gwa.cli build-prefs --config configs/ci.yaml --profile ci
+      - name: Train DPO
+        run: python -m gwa.cli train-dpo --config configs/ci.yaml --profile ci
+      - name: RL sparse
+        run: python -m gwa.cli train-rl --mode sparse --steps 2 --config configs/ci.yaml --profile ci
+      - name: RL dense
+        run: python -m gwa.cli train-rl --mode dense --steps 2 --config configs/ci.yaml --profile ci
+      - name: Held-out eval
+        run: python -m gwa.cli eval --config configs/ci.yaml --profile ci
+      - name: Report
+        run: python -m gwa.cli report --config configs/ci.yaml --profile ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-results
+          path: results/
+          if-no-files-found: warn

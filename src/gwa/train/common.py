@@ -83,17 +83,23 @@ def render_prefix(tokenizer, user_content: str) -> str:
     return f"{SYSTEM_PROMPT}\n\nUSER:\n{user_content}\n\nASSISTANT:\n"
 
 
-def make_lora_config(cfg: dict[str, Any], section: str):
+def make_lora_config(cfg: dict[str, Any], section: str, model=None):
     from peft import LoraConfig
 
     sec = cfg.get(section, {})
+    if sec.get("target_modules"):
+        targets = list(sec["target_modules"])
+    else:
+        model_type = getattr(getattr(model, "config", None), "model_type", "")
+        # GPT-2 uses Conv1D blocks; SmolLM/Llama-style models use linear projections.
+        targets = ["c_attn"] if model_type in ("gpt2", "gpt_neo", "gptj") else ["q_proj", "v_proj"]
     return LoraConfig(
         r=int(sec.get("lora_r", 8)),
         lora_alpha=int(sec.get("lora_alpha", 16)),
         lora_dropout=float(sec.get("lora_dropout", 0.05)),
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules=["q_proj", "v_proj"],
+        target_modules=targets,
     )
 
 

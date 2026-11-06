@@ -63,7 +63,7 @@ def run(cfg: dict[str, Any]) -> dict[str, Any]:
         args=args,
         train_dataset=Dataset.from_list(pairs),
         processing_class=tokenizer,
-        peft_config=make_lora_config(cfg, "dpo"),
+        peft_config=make_lora_config(cfg, "dpo", model),
     )
     started = time.time()
     result = trainer.train()

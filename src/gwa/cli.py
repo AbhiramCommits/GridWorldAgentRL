@@ -143,6 +143,14 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_build_tiny(args: argparse.Namespace) -> int:
+    from .tiny import main as build_tiny
+
+    path = build_tiny()
+    print(f"tiny model: {path}")
+    return 0
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     cfg = _cfg(args)
     path = _call_optional("gwa.report", "build_report", cfg)
@@ -194,6 +202,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("eval", help="head-to-head held-out benchmark with bootstrap CIs")
     _add_common(p)
     p.set_defaults(func=cmd_eval)
+
+    p = sub.add_parser("build-tiny", help="build the local random tiny GPT-2 model for CI")
+    p.add_argument("--profile", default=None)
+    p.add_argument("--config", default=None)
+    p.set_defaults(func=cmd_build_tiny, seed=None, backend="hf", out="results")
 
     p = sub.add_parser("report", help="assemble results/RESULTS.md from result files")
     p.add_argument("--profile", default=None, help="config profile")

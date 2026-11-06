@@ -276,7 +276,7 @@ class HFPolicy:
 
 def _build_local_tiny_model(directory: Path):
     """Build a tiny GPT-2 + a local WordLevel tokenizer with no network access."""
-    from tokenizers import Tokenizer, models, pre_tokenizers
+    from tokenizers import Tokenizer, models, pre_tokenizers, trainers
     from transformers import GPT2Config, GPT2LMHeadModel, PreTrainedTokenizerFast
 
     directory.mkdir(parents=True, exist_ok=True)
@@ -293,7 +293,12 @@ def _build_local_tiny_model(directory: Path):
     ]
     tok = Tokenizer(models.WordLevel(unk_token="<unk>"))
     tok.pre_tokenizer = pre_tokenizers.Whitespace()
-    tok.train_from_iterator(corpus, vocab_size=320)
+    tok.train_from_iterator(
+        corpus,
+        trainer=trainers.WordLevelTrainer(
+            vocab_size=320, special_tokens=["<unk>", "<pad>", "<bos>", "<eos>"]
+        ),
+    )
     fast = PreTrainedTokenizerFast(
         tokenizer_object=tok,
         bos_token="<bos>",

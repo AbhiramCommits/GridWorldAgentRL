@@ -1,0 +1,35 @@
+# CI profile: the full pipeline on the locally-built tiny GPT-2 (no hub model needed).
+extends: default.yaml
+default_profile: ci
+
+model:
+  id: assets/tiny_model
+  fallback_id: sshleifer/tiny-gpt2
+
+profiles:
+  ci:
+    data:
+      n_train: 12
+      n_eval: 6
+      prefs_n_tasks: 6
+      eval_seeds: [0]
+    sft:
+      max_steps: 4
+      batch_size: 2
+      grad_accum: 1
+      lr: 5.0e-4
+      logging_steps: 1
+    dpo:
+      max_steps: 2
+      batch_size: 1
+      grad_accum: 1
+      logging_steps: 1
+    rl:
+      max_steps: 2
+      group_size: 2
+      batch_size: 2
+      train_tasks: 4
+      max_turns: 4
+    eval:
+      max_turns: 4
+      n_bootstrap: 500

@@ -20,6 +20,7 @@ import json
 import logging
 import math
 import time
+from pathlib import Path
 from typing import Any
 
 from ..agent.loop import run_episode
@@ -220,10 +221,13 @@ def run(cfg: dict[str, Any], mode: str) -> dict[str, Any]:
         else:
             logger.warning("SFT adapter not found; RL starts from the base model")
     if init_path is None:
-        peft_config = make_lora_config(cfg, "sft")
+        peft_config = make_lora_config(cfg, "sft", base)
 
     dataset, task_by_prompt = _load_rl_dataset(cfg)
-    out_dir = adapter_dir(cfg, f"rl_{mode}")
+    out_key = f"output_dir_{mode}"
+    out_dir = Path(cfg.get("rl", {}).get(out_key, f"checkpoints/rl_{mode}"))
+    if not out_dir.is_absolute():
+        out_dir = REPO_ROOT / out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
     args = GRPOConfig(

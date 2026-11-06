@@ -1,0 +1,11 @@
+services:
+  gwa:
+    build: .
+    image: gridworldagentrl
+    volumes:
+      - ./results:/app/results
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./assets:/app/assets
+    entrypoint: ["python", "-m", "gwa.cli"]
+    command: ["report", "--profile", "smoke"]
