@@ -1,0 +1,39 @@
+......................................................................   [100%]
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.11.14-final-0 _______________
+
+Name                          Stmts   Miss  Cover
+-------------------------------------------------
+src/gwa/__init__.py               1      0   100%
+src/gwa/agent/__init__.py         5      0   100%
+src/gwa/agent/loop.py           159     50    69%
+src/gwa/agent/parser.py         119      8    93%
+src/gwa/agent/policies.py       262    173    34%
+src/gwa/agent/prompt.py          28      3    89%
+src/gwa/audit.py                115     52    55%
+src/gwa/cli.py                  140    140     0%
+src/gwa/data/__init__.py          0      0   100%
+src/gwa/data/build_prefs.py     132     41    69%
+src/gwa/data/build_sft.py        99      8    92%
+src/gwa/env/__init__.py           6      0   100%
+src/gwa/env/crm_env.py          128     13    90%
+src/gwa/env/reward.py            35      0   100%
+src/gwa/env/state.py             99      6    94%
+src/gwa/env/tasks.py            209     26    88%
+src/gwa/env/tools.py            158     20    87%
+src/gwa/eval.py                 113    113     0%
+src/gwa/metrics.py               34      5    85%
+src/gwa/plots.py                 42     42     0%
+src/gwa/report.py                71     71     0%
+src/gwa/rollout.py               49     33    33%
+src/gwa/stats.py                 24      1    96%
+src/gwa/tiny.py                  12     12     0%
+src/gwa/train/__init__.py         0      0   100%
+src/gwa/train/common.py          79     47    41%
+src/gwa/train/dpo.py             32     32     0%
+src/gwa/train/rl.py             167    167     0%
+src/gwa/train/sft.py             37     37     0%
+src/gwa/utils.py                123     45    63%
+-------------------------------------------------
+TOTAL                          2478   1145    54%
+70 passed, 1 deselected in 75.23s (0:01:15)

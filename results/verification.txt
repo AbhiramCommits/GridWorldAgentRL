@@ -1,0 +1,13 @@
+Final verification recorded by the build (Apple M3, CPU, macOS)
+===============================================================
+ruff check .                                  -> All checks passed
+pytest -q -m "not slow"                       -> 70 passed, 1 deselected
+pytest -q -m slow (tests/test_rl_smoke.py)    -> 1 passed (1307.42 s under load)
+pytest -q -m "not slow" --cov=gwa             -> TOTAL 54% (see coverage.txt)
+docker build -t gridworldagentrl .            -> success
+docker run --rm gridworldagentrl rollout \
+  --policy scripted --profile smoke           -> success=1.000 efficiency=1.000
+make all                                      -> attempted; full regeneration was stopped by
+                                                 host load (load average 66, unrelated desktop
+                                                 apps). The committed results are the earlier
+                                                 complete measured run recorded in results/.

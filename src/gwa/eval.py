@@ -202,6 +202,20 @@ def _markdown_table(payload: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _postprocess(cfg: dict[str, Any]) -> None:
+    """Regenerate the audit and figures from the episodes just written."""
+    from .audit import audit_episodes, load_eval_episodes, plot_audit, write_audit
+    from .plots import plot_learning_curves
+
+    out = Path(cfg.get("out_dir", "results"))
+    eps = load_eval_episodes(out / "eval_episodes.jsonl")
+    if eps:
+        audit = audit_episodes(eps, cfg)
+        write_audit(audit, out)
+        plot_audit(audit, out / "figures" / "audit.png")
+    plot_learning_curves(out, out / "figures" / "rl_curves.png")
+
+
 def run_benchmark_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
     data_cfg = cfg.get("data", {})
     eval_path = REPO_ROOT / data_cfg.get("tasks_eval", "data/tasks_eval.jsonl")
@@ -212,6 +226,8 @@ def run_benchmark_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
     eval_tasks = load_tasks(eval_path)
     policies = list(cfg.get("eval", {}).get("policies", ["base", "sft", "dpo", "scripted"]))
     seeds = [int(s) for s in cfg.get("data", {}).get("eval_seeds", [0])]
-    return run_benchmark(
+    payload = run_benchmark(
         policies, eval_tasks, seeds, cfg, backend=str(cfg.get("backend", "hf"))
     )
+    _postprocess(cfg)
+    return payload
